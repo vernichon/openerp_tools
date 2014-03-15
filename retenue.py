@@ -587,5 +587,5 @@ retenue(10000000)
 wb.save("retenue.xls")
 tps2 = time.clock()
 print(tps2 - tps1)
- 
+
 

@@ -1,6 +1,8 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-
+"""
+    Script utilisé pour annuler les factures
+"""
 import xmlrpclib
 from optparse import OptionParser
 
@@ -11,6 +13,8 @@ parser.add_option("-W", "--passwd", dest="passwd", default='terp', help="mot de 
 parser.add_option("-H", "--host", dest="host", default='127.0.0.1', help="Adresse  Serveur")
 parser.add_option("-p", "--port", dest="port", default='8069', help="port du serveur")
 parser.add_option("-P", "--protocole", dest="protocole", default='https', help="protocole http/https")
+parser.add_option("-i", "--id", dest="invoice_id", default=0, help="Invoice ID")
+parser.add_option("-s", "--pattern", dest="pattern", default="[('state', '!=', 'draft')]", help="Pattern search for Invoice")
 (options, args) = parser.parse_args()
 
 base = options.db
@@ -23,11 +27,14 @@ pwd = options.passwd
 server = xmlrpclib.ServerProxy(prot + '://' + serveur + ':' + port + '/xmlrpc/common')
 uid = server.login(base, user, pwd)
 sock = xmlrpclib.ServerProxy(prot + '://' + serveur + ':' + port + '/xmlrpc/object')
-
-invoice_ids = sock.execute(base, uid, pwd, 'account.invoice', 'search', [('state', '!=', 'draft')], 0 , 80000)
+if options.invoice_id == 0:
+    invoice_ids = sock.execute(base, uid, pwd, 'account.invoice', 'search', eval(options.pattern), 0 , 80000)
+else:
+    invoice_ids = [int(options.invoice_id)]
 pas = 0
 compteur = len(invoice_ids)
 for invoice_id in invoice_ids:
+    print invoice_id
     pas += 1
     move_id = sock.execute(base, uid, pwd, 'account.invoice', 'read', [invoice_id])
     print pas, '/', compteur, move_id[0]['number']
